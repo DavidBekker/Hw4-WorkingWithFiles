@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+﻿#define _CRT_SECURE_NO_WARNINGS
 /*#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>*/ //uncomment this block to check for heap memory allocation leaks.
@@ -63,28 +63,49 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 	//add code here
 }
 
-int countPipes(const char* lineBuffer, int maxCount)
+int countPipes(const char* lineBuffer, int maxCount)//סופרת קורסים
 {
-	int count = 0;
+	int countpipe = 0;
 	//FILE* studentfile = fopen("studentList.txt", "rt");
 	if (lineBuffer == NULL)
-		return -1;
+		exit(-1);
 	if (maxCount <= 0)
-		return 0;
-	int i = maxCount;;
-	while (lineBuffer != '\0'&& maxCount!=i)
+		exit(0);
+	int i = 1;//רוצים לקדם מצביע גודל פחות אחד פעמים, כי הפעם הראשונה כבר מוצבעת
+	while (lineBuffer != '\0' ||  i != maxCount)
 	{
 		if (lineBuffer == '|')
-			count++;
+			countpipe++;
 		lineBuffer++;
-		i--;
+		i++;
 	}
-	return count;
+	return countpipe;//לקחת בחשבון שכאן המצביע מצביע על הבאפר הבא
 }
+
 
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
 {
 	//add code here
+	//int sizNameFile = strlen(fileName);strlen(Line);//אורך השרשור במידה וצריך להעביר מיקום קובץ עי העתקת מחרוזות
+	
+	FILE * myClass ;
+	myClass = fopen("studentList.txt", "rt");
+	//FILE* myClass = fopen(fileName, "rt"); //צריך דרך המחרוזת שמקבלים
+	assert(myClass); //  אם מתקבל ערך
+	
+	int numOfStudent = 0;
+	char Line[1023];
+
+	while ((feof(myClass)) == 0) //in fail is 0 כל עוד אנחנו בתוך הקובץ ולא בסופו
+	{
+		fgets(Line, 1023, myClass);// עובר על שורה ומעדכן את הסמן
+		numOfStudent++;
+	}
+
+	*numberOfStudents = numOfStudent; //תוכן המצביע יהיה מספר הסטודנטים = בתוך הכתובת ישב המספר
+	rewind(myClass);
+	int *s;//מצביע למערך בגודל מספר הסטודנטים
+	fclose(myClass);
 }
 
 void factorGivenCourse(char** const* students, const int* coursesPerStudent, int numberOfStudents, const char* courseName, int factor)
