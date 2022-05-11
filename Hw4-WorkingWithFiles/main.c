@@ -66,17 +66,20 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 int countPipes(const char* lineBuffer, int maxCount)
 {
 	int count = 0;
-	FILE* studentfile = fopen("studentList.txt", "rt");
-	if (studentfile == NULL)
+	//FILE* studentfile = fopen("studentList.txt", "rt");
+	if (lineBuffer == NULL)
 		return -1;
 	if (maxCount <= 0)
 		return 0;
-
-	while (lineBuffer != '\0')
+	int i = maxCount;;
+	while (lineBuffer != '\0'&& maxCount!=i)
 	{
-		
+		if (lineBuffer == '|')
+			count++;
+		lineBuffer++;
+		i--;
 	}
-	fclose(studentfile);
+	return count;
 }
 
 char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, int* numberOfStudents)
