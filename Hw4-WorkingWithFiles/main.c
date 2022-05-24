@@ -43,7 +43,7 @@ int main()
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	//Part B
 	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -155,7 +155,6 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 			if (arrStudent[i][2 * j + 2] == NULL) exit(1);
 			strcpy(arrStudent[i][2 * j + 2], token);
 
-
 		}
 	}
 	return arrStudent;
@@ -231,28 +230,70 @@ void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStuden
 			free(students[i][j + 1]);
 		}
 		
-		fputs(buffer, myfle);
-		fflush(myfle);
+		fputs(buffer, myfle);//לא מתבצע 
+		fputs("\n", myfle);
 
 	}
 	free(students);
 	free(coursesPerStudent);
-	free(numberOfStudents);
-
 	fclose(myfle);
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
 {
-	//add code here
+	FILE* mySbinfile = fopen(fileName, "wb");
+	if (mySbinfile == NULL)
+	{
+		printf("Unable to read file");
+		exit(1);
+	}
+
+	fwrite(&numberOfStudents, sizeof(int), 1, mySbinfile);
+
+	for (int i = 0; i < numberOfStudents; i++)
+	{
+		fwrite(students, sizeof(students), 1, mySbinfile); //שם שם סטודנט בקובץ
+		students++;
+	}
+
+	fclose(mySbinfile);
 }
 
 Student* readFromBinFile(const char* fileName)
 {
-	//add code here
+	FILE* mySbinfile = fopen(fileName, "rb");
+	if (mySbinfile == NULL)
+	{
+		printf("Unable to read file");
+		exit(1);
+	}
+	Student* buffer=NULL;
+	int numofstudents;
+	fread(buffer, sizeof(buffer), 1, fileName);
+	numofstudents = buffer->numberOfCourses;
+	Student* ParrStudent = (Student*)malloc(sizeof(Student) * (numofstudents));
+	ParrStudent = buffer;
 }
 
 Student* transformStudentArray(char*** students, const int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	 Student* arrStudent = (Student*)malloc(sizeof(Student) * (numberOfStudents));//הקצאה דינאמית כאורך הסטודנטים
+	 if (arrStudent == NULL) exit(1);
+
+	for (int i = 0; i < (numberOfStudents); i++)
+	{
+		strcpy(arrStudent->name, students[i][0]);//מעתיד את שם הסטודנט למבנה
+		arrStudent->numberOfCourses = coursesPerStudent[i];
+		StudentCourseGrade* pstg = (StudentCourseGrade*)malloc(sizeof(StudentCourseGrade) * (coursesPerStudent[i]));
+		if (pstg == NULL) exit(1);
+
+		int a = coursesPerStudent[i]*2;
+		for (int j = 1; j < a; j=j+2)
+		{
+			strcpy(pstg->courseName, students[i][j]);
+			pstg->grade = atoi(students[i][j + 1]);
+		}
+		arrStudent->grades = pstg;
+	}
+	return(arrStudent);
 }
