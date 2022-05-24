@@ -43,7 +43,7 @@ int main()
 	char*** students = makeStudentArrayFromFile("studentList.txt", &coursesPerStudent, &numberOfStudents);
 	factorGivenCourse(students, coursesPerStudent, numberOfStudents, "Advanced Topics in C", +5);
 	printStudentArray(students, coursesPerStudent, numberOfStudents);
-	//studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
+	studentsToFile(students, coursesPerStudent, numberOfStudents); //this frees all memory. Part B fails if this line runs. uncomment for testing (and comment out Part B)
 
 	//Part B
 	Student* transformedStudents = transformStudentArray(students, coursesPerStudent, numberOfStudents);
@@ -127,8 +127,6 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 	char* buffer = (char*)malloc(sizeof(char) * 1024);//מערך דינמאי על מנת לשלוט במיקום של השורה
 
-	int numofbits = 0;//אורך המערך לכל סטודנט משתנה
-
 	char*** arrStudent = (char***)malloc(sizeof(char**) * (*numberOfStudents));//הקצאה דינאמית כאורך הסטודנטים
 
 	for (int i = 0; i < (*numberOfStudents); i++)// מערך שרץ כמספר הסטודנטים כמספר השורות
@@ -148,49 +146,18 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 			token = strtok(NULL, ",|\n");
 			arrStudent[i][2 * j + 1] = (char*)malloc(sizeof(char) * (strlen(token) + 1));
-			//TODO add allocation check
+			if (arrStudent[i][2 * j + 1] == NULL)
+				exit(1);
 			strcpy(arrStudent[i][2 * j + 1], token);
 
 			token = strtok(NULL, ",|\n");
 			arrStudent[i][2 * j + 2] = (char*)malloc(sizeof(char) * (strlen(token) + 1));
+			if (arrStudent[i][2 * j + 2] == NULL) exit(1);
 			strcpy(arrStudent[i][2 * j + 2], token);
 
 
-
-
-			//int valNameOfcurse = strlen(strtok(buffer[+carsure], ','));
-			//char* elementCurse = (char*)malloc(sizeof(char) * (valNameOfcurse + 1));
-			//strcpy(elementCurse, strtok(buffer[+carsure], ','));
-			//*arrStudent[i][j + a + 1] = elementCurse;
-			//carsure = carsure + (valNameOfcurse + 1);
-			//int counterCursers = (coursesPerStudent[i] - 1);
-
-			//if (a < counterCursers)
-			//{
-			//	int valScore = strlen(strtok(buffer[+carsure], '|'));
-			//	char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
-			//	strcpy(elemenScore, strtok(buffer[+carsure], '|'));
-			//	*arrStudent[i][j + a + 2] = elemenScore;
-			//	carsure = carsure + (valScore + 1);
-			//}
-			//else//ציון של הקורס האחרון עד סוף השורה
-			//{
-			//	int valScore = strlen(strtok(buffer[+carsure], NULL));
-			//	char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
-			//	if (elemenScore == NULL)return;
-			//	strcpy(elemenScore, strtok(buffer[+carsure], NULL));
-			//	*arrStudent[i][j + a + 2] = elemenScore;
-			//	carsure = carsure + (valScore + 1);
-			//}
-
-
 		}
-
-
 	}
-
-
-
 	return arrStudent;
 	fclose(myfle);
 }
@@ -240,12 +207,39 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
 {
-	FILE* myfle = fopen("studentList.txt", "w+");// מוד קריאה וכתיבה תוך כדי דריסה
+	//students = makeStudentArrayFromFile("studentList.txt",&coursesPerStudent,&numberOfStudents);
+	FILE* myfle = fopen("studentListTest.txt", "wt");// מוד קריאה וכתיבה תוך כדי דריסה
 	if (myfle == NULL) {
 		printf("Unable to open file\n");
 		exit(1);
 	}//בודק האם ניתן לפתוח את הקובץ
+	char*** ps = students;
+	for (int i = 0; i < (numberOfStudents); i++)// מערך שרץ כמספר הסטודנטים כמספר השורות
+	{
+		char buffer[1024] = "";
+		strcat(buffer, students[i][0]);// מכניס שם לשורה
+		free(students[i][0]);
 
+		int a = ((coursesPerStudent[i])*2);
+		for (int j = 1; j < a ; j += 2) //הכנסת קורסים
+		{
+			strcat(buffer, "|");
+			strcat(buffer,students[i][j]);//הכנסת שם קורס
+			free(students[i][j]);
+			strcat(buffer, ",");
+			strcat(buffer, students[i][j + 1]);//הכנסת הציון
+			free(students[i][j + 1]);
+		}
+		
+		fputs(buffer, myfle);
+		fflush(myfle);
+
+	}
+	free(students);
+	free(coursesPerStudent);
+	free(numberOfStudents);
+
+	fclose(myfle);
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
