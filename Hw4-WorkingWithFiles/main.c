@@ -86,7 +86,8 @@ void countStudentsAndCourses(const char* fileName, int** coursesPerStudent, int*
 
 	while (numOfStudent >= 1)
 	{
-		(*coursesPerStudent)[i] = countPipes(fgets(Line, 1023, myCLass), strlen(fgets(Line, 1023, myCLass)));
+		fgets(Line, 1023, myCLass);
+		(*coursesPerStudent)[i] = countPipes(Line, 1023);
 		i++;
 		numOfStudent--;
 	}
@@ -103,13 +104,13 @@ int countPipes(const char* lineBuffer, int maxCount)//סופרת קורסים נ
 	if (maxCount <= 0)
 		exit(0);
 
-	int i = 1;//רוצים לקדם מצביע גודל פחות אחד פעמים, כי הפעם הראשונה כבר מוצבעת
-	while (lineBuffer != '\0' || i != maxCount)
+	//int i = 1;//רוצים לקדם מצביע גודל פחות אחד פעמים, כי הפעם הראשונה כבר מוצבעת
+	while (*lineBuffer != '\0'/* || i >= maxCount*/)
 	{
-		if (lineBuffer == '|')
+		if (*lineBuffer == '|')
 			countpipe++;
 		lineBuffer++;
-		i++;
+		//i++;
 	}
 	return countpipe;//לקחת בחשבון שכאן המצביע מצביע על הבאפר הבא
 }
@@ -130,55 +131,67 @@ char*** makeStudentArrayFromFile(const char* fileName, int** coursesPerStudent, 
 
 	char*** arrStudent = (char***)malloc(sizeof(char**) * (*numberOfStudents));//הקצאה דינאמית כאורך הסטודנטים
 
-	for (int i = 0; i <= (*numberOfStudents); i++)// מערך שרץ כמספר הסטודנטים כמספר השורות
+	for (int i = 0; i < (*numberOfStudents); i++)// מערך שרץ כמספר הסטודנטים כמספר השורות
 	{
-		char** arrInfoStudent = (char**)malloc(sizeof(char*) * ((*coursesPerStudent)[i]) * 2 + 1);// הקצאה ע
+		arrStudent[i] = (char**)malloc(sizeof(char*) * ((*coursesPerStudent)[i]) * 2 + 1);// הקצאה ע
 		fgets(buffer, 1024, myfle);
-		for (int j = 0; j < (*coursesPerStudent[i] * 2 + 1); j++)
+
+		char* token = NULL;
+		token = strtok(buffer, "|");
+
+		arrStudent[i][0] = (char*)malloc(sizeof(char) * (strlen(token) + 1));//נותן את גודל המחרוזת של המידע עבור כל סטודנט
+		if (arrStudent[i][0] == NULL) exit(1);
+		strcpy(arrStudent[i][0], token);//העתקנו את שם הסטודנט למשתנה חדש שהוקצא בזכרון
+
+		for (int j = 0; j < ((*coursesPerStudent)[i]); j++)
 		{
-			int valName = strlen(strtok(buffer, '|'));//נותן את גודל המחרוזת של המידע עבור כל סטודנט
-			int carsure = valName + 1;//סמן הזז בקובץ
-			char* elementname = (char*)malloc(sizeof(char) * (valName + 1));//מבצע הקצאה דינאמית עבור שם הסטודנט ברשימה
-			if (elementname == NULL) return;
-			strcpy(elementname, strtok(buffer, '|'));//העתקנו את שם הסטודנט למשתנה חדש שהוקצא בזכרון
-			*arrStudent[i][j] = elementname;//מכניס את השם של הסטודנט לעמודה במערך הסטודנטים
 
-			for (int a = 0; a < (*coursesPerStudent[i]); a++)
-			{
-				int valNameOfcurse = strlen(strtok(buffer[+carsure], ','));
-				char* elementCurse = (char*)malloc(sizeof(char) * (valNameOfcurse + 1));
-				strcpy(elementCurse, strtok(buffer[+carsure], ','));
-				*arrStudent[i][j + a + 1] = elementCurse;
-				carsure = carsure + (valNameOfcurse + 1);
-				int counterCursers = (coursesPerStudent[i] - 1);
+			token = strtok(NULL, ",|\n");
+			arrStudent[i][2 * j + 1] = (char*)malloc(sizeof(char) * (strlen(token) + 1));
+			//TODO add allocation check
+			strcpy(arrStudent[i][2 * j + 1], token);
 
-				if (a < counterCursers)
-				{
-					int valScore = strlen(strtok(buffer[+carsure], '|'));
-					char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
-					strcpy(elemenScore, strtok(buffer[+carsure], '|'));
-					*arrStudent[i][j + a + 2] = elemenScore;
-					carsure = carsure + (valScore + 1);
-				}
-				else//ציון של הקורס האחרון עד סוף השורה
-				{
-					int valScore = strlen(strtok(buffer[+carsure], NULL));
-					char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
-					if (elemenScore == NULL)return;
-					strcpy(elemenScore, strtok(buffer[+carsure], NULL));
-					*arrStudent[i][j + a + 2] = elemenScore;
-					carsure = carsure + (valScore + 1);
-				}
+			token = strtok(NULL, ",|\n");
+			arrStudent[i][2 * j + 2] = (char*)malloc(sizeof(char) * (strlen(token) + 1));
+			strcpy(arrStudent[i][2 * j + 2], token);
 
 
-			}
+
+
+			//int valNameOfcurse = strlen(strtok(buffer[+carsure], ','));
+			//char* elementCurse = (char*)malloc(sizeof(char) * (valNameOfcurse + 1));
+			//strcpy(elementCurse, strtok(buffer[+carsure], ','));
+			//*arrStudent[i][j + a + 1] = elementCurse;
+			//carsure = carsure + (valNameOfcurse + 1);
+			//int counterCursers = (coursesPerStudent[i] - 1);
+
+			//if (a < counterCursers)
+			//{
+			//	int valScore = strlen(strtok(buffer[+carsure], '|'));
+			//	char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
+			//	strcpy(elemenScore, strtok(buffer[+carsure], '|'));
+			//	*arrStudent[i][j + a + 2] = elemenScore;
+			//	carsure = carsure + (valScore + 1);
+			//}
+			//else//ציון של הקורס האחרון עד סוף השורה
+			//{
+			//	int valScore = strlen(strtok(buffer[+carsure], NULL));
+			//	char* elemenScore = (char*)malloc(sizeof(char) * (valScore + 1));
+			//	if (elemenScore == NULL)return;
+			//	strcpy(elemenScore, strtok(buffer[+carsure], NULL));
+			//	*arrStudent[i][j + a + 2] = elemenScore;
+			//	carsure = carsure + (valScore + 1);
+			//}
 
 
 		}
+
+
 	}
 
 
-	return &arrStudent;
+
+	return arrStudent;
 	fclose(myfle);
 }
 
@@ -189,18 +202,20 @@ void factorGivenCourse(char** const* students, const int* coursesPerStudent, int
 
 	for (int a = 0; a < numberOfStudents; a++) //יעבור סטודנט סטודנט
 	{
-
-		int* qours = (2 * coursesPerStudent[a]);
-		for (int q = 1; q < *qours; q + 2)
+		int qours = (coursesPerStudent[a]*2);
+		for (int i = 1; i < qours; i =i+2)
 		{
-			if (strcmp(courseName, *students[a][q])) // מחזיר 1 אם זה הקורס, תא שם הקורס
+			if ((strcmp(courseName, students[a][i]))==0) // מחזיר 1 אם זה הקורס, תא שם הקורס
 			{
-				int scor = *students[a][q + 1]; //תא הציון
-
+				int  scor;
+				scor = atoi(students[a][i + 1]); //תא הציון'
+				scor = scor + factor;
 				if (scor >= 100)
 					scor = 100;
-
-
+				else if (scor <= 0)
+					scor = 0;
+				_itoa(scor, students[a][i + 1], 10);
+				
 			}
 
 		}
@@ -225,7 +240,12 @@ void printStudentArray(const char* const* const* students, const int* coursesPer
 
 void studentsToFile(char*** students, int* coursesPerStudent, int numberOfStudents)
 {
-	//add code here
+	FILE* myfle = fopen("studentList.txt", "w+");// מוד קריאה וכתיבה תוך כדי דריסה
+	if (myfle == NULL) {
+		printf("Unable to open file\n");
+		exit(1);
+	}//בודק האם ניתן לפתוח את הקובץ
+
 }
 
 void writeToBinFile(const char* fileName, Student* students, int numberOfStudents)
